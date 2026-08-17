@@ -8,7 +8,7 @@ $endif$
 $if(logo)$
   logo: "$logo$",
 $elseif(brand.logo)$
-  font: ("$brand.logo$",),
+  logo: ("$brand.logo$",),
 $endif$
 $if(sender)$
   sender: (
@@ -44,8 +44,26 @@ $if(invoice)$
     issued: "$invoice.issued$",
     due: "$invoice.due$",
     reference: "$invoice.reference$",
-    fee: "$invoice.fee$",
-    penalty: "$invoice.penalty$"
+    fee: $if(invoice.fee)$$invoice.fee$$else$2.28$endif$,
+    penalty: $if(invoice.penalty)$"$invoice.penalty$"$else$"€40"$endif$,
+$if(invoice.currency)$
+    currency: "$invoice.currency$",
+$endif$
+$if(invoice.items)$
+    items: (
+$for(invoice.items)$
+      (
+        description: "$it.description$",
+$if(it.details)$
+        details: "$it.details$",
+$endif$
+        quantity: $if(it.quantity)$$it.quantity$$else$1$endif$,
+        unit-price: $if(it.unit-price)$$it.unit-price$$else$0$endif$,
+        vat: $if(it.vat)$$it.vat$$else$0$endif$,
+      ),
+$endfor$
+    ),
+$endif$
   ),
 $endif$
 $if(bank)$
@@ -69,7 +87,7 @@ $endif$
 $if(mainfont)$
   font: ("$mainfont$",),
 $elseif(brand.typography.base.family)$
-  font: ("$brand.typography.base.family$",),
+  font: $brand.typography.base.family$,
 $endif$
 $if(fontsize)$
   fontsize: $fontsize$,
@@ -78,7 +96,7 @@ $elseif(brand.typography.base.size)$
 $endif$
 $if(title)$
 $if(brand.typography.headings.family)$
-  heading-family: ("$brand.typography.headings.family$",),
+  heading-family: $brand.typography.headings.family$,
 $endif$
 $if(brand.typography.headings.weight)$
   heading-weight: $brand.typography.headings.weight$,

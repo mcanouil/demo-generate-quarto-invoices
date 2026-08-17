@@ -1,10 +1,20 @@
-title: Consulting 2024
-description: 2024/01/01 -- 2024/01/14
+title: "Consulting 2024"
+description: "2024/01/01 -- 2024/01/14"
 invoice:
-  task: A very important job
-  details: A description of the tasks
-  number: 202401-001
+  number: "202401-001"
   issued: 2024-01-15
   due: 2024-02-29
-  reference: 364500285
-  amount: 1,234.56
+  reference: "364500285"
+  currency: "GBP"
+  penalty: "£40"
+  items:
+    - description: "Strategy workshop"
+      details: "Two-day on-site facilitation."
+      quantity: 2
+      unit-price: 1500
+      vat: 20
+    - description: "Written report"
+      details: "A summary of the workshop."
+      quantity: 1
+      unit-price: 450
+      vat: 20

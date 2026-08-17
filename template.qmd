@@ -1,8 +1,7 @@
 ---
-currency: €
 sender:
-  name: Firstname LASTNAME
-  email: Firstname.LASTNAME@company.dev
+  name: Jane DOE
+  email: Jane.DOE@company.dev
   address:
     street: 123 Rue de la Paix
     zip: 75000
@@ -22,10 +21,10 @@ recipient:
     city: New York
     state: NY
     country: United States
-logo: none
 format:
   invoice-typst:
-    lang: en_UK
+    lang: en
+    region: UK
     papersize: a4
     margin:
       x: 2.5cm
@@ -41,25 +40,3 @@ brand:
       family: "Alegreya Sans"
       size: 12pt
 ---
-
-```{=typst}
-#table(
-  columns: (1fr, auto, auto, auto, auto),
-  rows: 36pt,
-  fill: (col, row) =>
-    if (row == 0 and col in (0, 1, 2, 3, 4, 5)) or (row == 5 and col in (2, 3, 4, 5)) {
-      luma(240)
-    } else {
-      white
-    },
-  inset: 5pt,
-  align: horizon,
-  stroke: none,
-  [*Details*], [*Qty*], [*Unit price*], [*VAT %*], [*Total excl. VAT*],
-  [*{{< meta invoice.task >}}* \ _{{< meta invoice.details >}}_], [1], [{{< meta currency >}}{{< meta invoice.amount >}}], [0 %], [{{< meta currency >}}{{< meta invoice.amount >}}],
-  [], [], [], [], [],
-  [], [], [*Total excl. VAT*], [], [{{< meta currency >}}{{< meta invoice.amount >}}],
-  [], [], [*VAT*], [], [{{< meta currency >}}0.00],
-  [], [], [*Total*], [], [{{< meta currency >}}{{< meta invoice.amount >}}]
-)
-```

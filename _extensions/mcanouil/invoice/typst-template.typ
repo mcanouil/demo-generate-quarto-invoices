@@ -1,7 +1,10 @@
 #let parse-date(date) = {
-  let date = date.replace("\\", "")
-  let date = str(date).split("-").map(int)
-  datetime(year: date.at(0), month: date.at(1), day: date.at(2))
+  let cleaned = str(date).replace("\\", "")
+  let parts = cleaned.split("-").map(int)
+  if parts.len() != 3 {
+    panic("Invalid date '" + cleaned + "'. Expected ISO format YYYY-MM-DD.")
+  }
+  datetime(year: parts.at(0), month: parts.at(1), day: parts.at(2))
 }
 
 #let format-date(date) = {
@@ -34,7 +37,8 @@
   invoice: none,
   bank: none,
   fee: 2.28,
-  penalty: "€40",
+  penalty: 40,
+  currency: "EUR",
   paper: "a4",
   margin: (x: 2.5cm, y: 2.5cm),
   lang: "en",
@@ -43,6 +47,7 @@
   heading-family: none,
   heading-weight: "bold",
   heading-style: "normal",
+  heading-decoration: none,
   heading-color: black,
   heading-line-height: 0.65em,
   fontsize: 12pt,
@@ -50,22 +55,41 @@
   body
 ) = {
 
-  show heading: it => [
-    #set par(leading: heading-line-height)
-    #set text(font: heading-family, weight: heading-weight, style: heading-style, fill: heading-color)
-    #it.body
-  ]
+  show heading: it => {
+    set par(leading: heading-line-height)
+    set text(weight: heading-weight, style: heading-style, fill: heading-color)
+    if heading-family != none {
+      set text(font: heading-family)
+      it.body
+    } else {
+      it.body
+    }
+  }
 
   let issued = parse-date(invoice.at("issued"))
-  if "penalty" in invoice and invoice != none {
-    let penalty = invoice.at("penalty", default: "€40")
-  } else {
-    let penalty = "€40"
+  let due = parse-date(invoice.at("due"))
+  if due < issued {
+    panic(
+      "Invoice 'due' date (" + invoice.at("due") + ") must be on or after 'issued' date (" + invoice.at("issued") + ")."
+    )
   }
-  if "fee" in invoice and invoice != none {
-    let fee = invoice.at("fee", default: 2.28)
+
+  let invoice-currency = invoice.at("currency", default: currency)
+  let invoice-fee = _coerce-number(invoice.at("fee", default: fee), default: fee)
+  let invoice-penalty-raw = invoice.at("penalty", default: penalty)
+  let invoice-items = invoice.at("items", default: none)
+
+  let money(value) = format-money(
+    value,
+    currency: invoice-currency,
+    lang: lang,
+    region: region,
+  )
+
+  let penalty-display = if type(invoice-penalty-raw) == int or type(invoice-penalty-raw) == float {
+    money(invoice-penalty-raw)
   } else {
-    let fee = 2.28
+    str(invoice-penalty-raw).replace("\\", "")
   }
 
   set document(
@@ -184,11 +208,16 @@
     if title != none {
       heading(level: 1, title.replace("\\", ""))
       if description != none {
-        emph(description.replace("\\", ""))
+        emph(description.replace("\\", "").replace("---", "\u{2014}").replace("--", "\u{2013}"))
       }
     }
 
-    body
+    let auto-table = items-table(invoice-items, money)
+    if auto-table != none {
+      auto-table
+    } else {
+      body
+    }
 
     align(right, if "exempted" in sender and sender != none and sender.exempted != "none" and sender.exempted != none {
       text(luma(100), emph(sender.at("exempted").replace("\\", "")))
@@ -221,11 +250,11 @@
           + " sent you this invoice on "
           + format-date(issued)
           + ". The invoice must be paid in under "
-          + count-days(issued, parse-date(invoice.at("due")))
+          + count-days(issued, due)
           + " days, otherwise you will have to pay a late fee of "
-          + str(fee)
+          + str(invoice-fee)
           + " % and a "
-          + str(penalty)
+          + penalty-display
           + " penalty for recovery costs. "
           + "No discount will be granted for early settlement."
       )
